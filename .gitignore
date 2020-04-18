@@ -1,0 +1,9 @@
+*.patch
+.idea/
+.git/
+runtime/
+vendor/
+.env
+.DS_Store
+*.lock
+.phpunit*
