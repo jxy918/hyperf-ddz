@@ -1,59 +1,99 @@
-# Default Dockerfile
+# @description php image base on the debian 9.x
 #
-# @link     https://www.hyperf.io
-# @document https://doc.hyperf.io
-# @contact  group@hyperf.io
-# @license  https://github.com/hyperf-cloud/hyperf/blob/master/LICENSE
+#                       Some Information
+# ------------------------------------------------------------------------------------
+# @link https://hub.docker.com/_/debian/      alpine image
+# @link https://hub.docker.com/_/php/         php image
+# @link https://github.com/docker-library/php php dockerfiles
+# @see https://github.com/docker-library/php/tree/master/7.2/stretch/cli/Dockerfile
+# ------------------------------------------------------------------------------------
+# @build-example docker build . -f Dockerfile -t swoft/swoft
+#
+FROM php:7.2
 
-FROM hyperf/hyperf:7.2-alpine-v3.9-cli
-LABEL maintainer="Hyperf Developers <group@hyperf.io>" version="1.0" license="MIT"
+LABEL maintainer="jxy918 <251413215@qq.com>" version="2.3"
 
-##
-# ---------- env settings ----------
-##
 # --build-arg timezone=Asia/Shanghai
 ARG timezone
+# app env: prod pre test dev
+ARG app_env=prod
+# default use www-data user
+ARG work_user=www-data
 
-ENV TIMEZONE=${timezone:-"Asia/Shanghai"} \
-    COMPOSER_VERSION=1.9.1 \
-    APP_ENV=prod
+ENV APP_ENV=${app_env:-"prod"} \
+    TIMEZONE=${timezone:-"Asia/Shanghai"} \
+    PHPREDIS_VERSION=4.3.0 \
+    SWOOLE_VERSION=4.4.17 \
+    COMPOSER_ALLOW_SUPERUSER=1
 
-# update
-RUN set -ex \
-    && apk update \
-    # install composer
-    && cd /tmp \
-    && wget https://github.com/composer/composer/releases/download/${COMPOSER_VERSION}/composer.phar \
-    && chmod u+x composer.phar \
+# Libs -y --no-install-recommends
+RUN apt-get update \
+    && apt-get install -y \
+        curl wget git zip unzip less vim openssl \
+        libz-dev \
+        libssl-dev \
+        libnghttp2-dev \
+        libpcre3-dev \
+        libjpeg-dev \
+        libpng-dev \
+        libfreetype6-dev \
+# Install composer
+    && curl -sS https://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/composer \
-    # show php version and extensions
-    && php -v \
-    && php -m \
-    #  ---------- some config ----------
-    && cd /etc/php7 \
-    # - config PHP
-    && { \
-        echo "upload_max_filesize=100M"; \
-        echo "post_max_size=108M"; \
-        echo "memory_limit=1024M"; \
-        echo "date.timezone=${TIMEZONE}"; \
-    } | tee conf.d/99-overrides.ini \
-    # - config timezone
-    && ln -sf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
+    && composer self-update --clean-backups \
+# Install PHP extensions
+    && docker-php-ext-install \
+       bcmath gd pdo_mysql mbstring sockets zip sysvmsg sysvsem sysvshm \
+# Install redis extension
+    && wget http://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz -O /tmp/redis.tar.tgz \
+    && pecl install /tmp/redis.tar.tgz \
+    && rm -rf /tmp/redis.tar.tgz \
+    && docker-php-ext-enable redis \
+# Install swoole extension
+    && wget https://github.com/swoole/swoole-src/archive/v${SWOOLE_VERSION}.tar.gz -O swoole.tar.gz \
+    && mkdir -p swoole \
+    && tar -xf swoole.tar.gz -C swoole --strip-components=1 \
+    && rm swoole.tar.gz \
+    && ( \
+        cd swoole \
+        && phpize \
+        && ./configure --enable-mysqlnd --enable-sockets --enable-openssl --enable-http2 \
+        && make -j$(nproc) \
+        && make install \
+    ) \
+    && rm -r swoole \
+    && docker-php-ext-enable swoole \
+	
+#Install msgpack extension
+	&& wget http://pecl.php.net/get/msgpack-2.0.3.tgz -O msgpack-2.0.3.tgz \
+	&& mkdir -p msgpack \
+	&& tar -xf msgpack-2.0.3.tgz -C msgpack --strip-components=1 \
+	&& ( \
+        cd msgpack \
+        && phpize \
+        && ./configure \
+        && make \
+        && make install \
+    ) \
+	&& rm -r msgpack \
+    && docker-php-ext-enable msgpack \
+	
+# Clear dev deps
+    && apt-get clean \
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+# Timezone
+    && cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
     && echo "${TIMEZONE}" > /etc/timezone \
-    # ---------- clear works ----------
-    && rm -rf /var/cache/apk/* /tmp/* /usr/share/man \
-    && echo -e "\033[42;37m Build Completed :).\033[0m\n"
+    && echo "[Date]\ndate.timezone=${TIMEZONE}" > /usr/local/etc/php/conf.d/timezone.ini
 
-WORKDIR /opt/www
+# Install composer deps
+#ADD . /var/www/swoft
+#RUN  cd /var/www/swoft \
+#    && composer install \
+#    && composer clearcache
+#
+WORKDIR /var/www/swoft
+EXPOSE 18306 18307 18308
 
-# Composer Cache
-# COPY ./composer.* /opt/www/
-# RUN composer install --no-dev --no-scripts
-
-COPY . /opt/www
-RUN composer install --no-dev -o
-
-EXPOSE 9501
-
-ENTRYPOINT ["php", "/opt/www/bin/hyperf.php", "start"]
+# ENTRYPOINT ["php", "/var/www/swoft/bin/swoft", "http:start"]
+# CMD ["php", "/var/www/swoft/bin/swoft", "http:start"]
