@@ -92,6 +92,8 @@ http://[ip]:[port]/
 
 * qq：251413215，加qq请输入验证消息：hyperf-ddz
 
+qq群:100754069
+
 ### 七，备注
 
 * 可以使用根目录增加docker运行环境(Dockerfile)， 可以直接执行下面的命令，创建镜像php_swoole, 环境增加php-protobuf，php-msgpack支持。 
