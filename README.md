@@ -78,7 +78,11 @@ php ai.php  xxx
 
 ```
 > xxx 表示用户账号, 账号最好用英文加数字, 账号唯一就可以
+
+> ai功能需要关闭swoole短名称功能，php.ini 添加 swoole.use_shortname=off
+
 ![AI示例图](images/ai.jpg)
+
 * 4，访问url:
 
 ```
