@@ -148,15 +148,15 @@ class Ai {
      * 创建链接
      */
     protected function createConnection() {
-        Co\run(function () {
-            $cli = new Swoole\Coroutine\Http\Client(self::IP, self::PORT);
+	co(function () {
+            $cli = new \Swoole\Coroutine\Http\Client(self::IP, self::PORT);
             $cli->set($this->_setconfig);
             $cli->setHeaders($this->_header);
-            $cli->setMethod("GET");
-            $self = $this;
+	    $cli->setMethod("GET");
+	    $self = $this;
             $data = array('account' => $this->account);
             $token = json_encode($data);
-            $ret = $cli->upgrade('/game?token=' . $token);
+	    $ret = $cli->upgrade('/?token=' . $token);
             if($ret && $cli->connected) {
                 //清除断线重连定时器, 断线重连次数重置为0
                 Swoole\Timer::clear($this->reback_timer);
@@ -171,7 +171,7 @@ class Ai {
                 }
 
             }
-        });
+	});
     }
 
     /**
