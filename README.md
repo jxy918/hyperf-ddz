@@ -70,7 +70,7 @@ php bin/hyperf.php start
 
 ```  
 
-机器人AI执行命令操作, 进入根目录下test目录下
+机器人AI执行命令操作, 进入根目录下ai目录下
 
 ```
 //xxx表示用户账号
@@ -78,7 +78,7 @@ php ai.php  xxx
 
 ```
 > xxx 表示用户账号, 账号最好用英文加数字, 账号唯一就可以
-
+![AI示例图](images/ai.jpg)
 * 4，访问url:
 
 ```
