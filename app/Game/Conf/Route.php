@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Game\Conf;
 
 
@@ -17,15 +18,15 @@ class Route
     public static $cmd_map = array(
         //系统请求
         MainCmd::CMD_SYS => array(
-            SubCmd::HEART_ASK_REQ =>'HeartAsk',
+            SubCmd::HEART_ASK_REQ => 'HeartAsk',
         ),
         //游戏请求
         MainCmd::CMD_GAME => array(
-            SubCmd::SUB_GAME_START_REQ =>'GameStart',
-            SubCmd::SUB_GAME_CALL_REQ =>'GameCall',
-            SubCmd::SUB_GAME_DOUBLE_REQ =>'GameDouble',
-            SubCmd::SUB_GAME_OUT_CARD_REQ =>'GameOutCard',
-            SubCmd::CHAT_MSG_REQ =>'ChatMsg',
+            SubCmd::SUB_GAME_START_REQ => 'GameStart',
+            SubCmd::SUB_GAME_CALL_REQ => 'GameCall',
+            SubCmd::SUB_GAME_DOUBLE_REQ => 'GameDouble',
+            SubCmd::SUB_GAME_OUT_CARD_REQ => 'GameOutCard',
+            SubCmd::CHAT_MSG_REQ => 'ChatMsg',
         ),
     );
 }

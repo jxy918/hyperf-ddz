@@ -1,11 +1,12 @@
 <?php
+
 namespace App\Game\Core;
 
 use App\Game\Conf\Route;
 
 /**
  * 调度运行游戏逻辑策略,分别调度到不同协议目录里，策略模式容器
- */ 
+ */
 class Dispatch
 {
     /**
@@ -13,7 +14,7 @@ class Dispatch
      * @var object
      */
     private $_strategy = null;
-    
+
     /**
      * 参数配置文件
      * @var array
@@ -41,7 +42,7 @@ class Dispatch
         //获取策略类名
         $classname = isset($route[$this->_params['cmd']][$this->_params['scmd']]) ? $route[$this->_params['cmd']][$this->_params['scmd']] : '';
         //转发到对应目录处理逻辑
-        $classname = 'App\Game\Logic\\'.$classname;
+        $classname = 'App\Game\Logic\\' . $classname;
         if (class_exists($classname)) {
             $this->_strategy = new $classname($this->_params);
             Log::show("Class: $classname");
@@ -52,17 +53,17 @@ class Dispatch
 
     /**
      * 获取策略
-     */         
+     */
     public function getStrategy()
     {
         return $this->_strategy;
     }
-    
+
     /**
      * 执行策略
      */
     public function exec()
     {
-    	return $this->_strategy->exec();
+        return $this->_strategy->exec();
     }
 }

@@ -3,6 +3,7 @@
  * 斗地主异步处理类，异步匹配用户打牌
  * @author jxy918
  */
+
 namespace App\Task;
 
 use Hyperf\Task\Annotation\Task;
@@ -21,16 +22,16 @@ class GameSyncTask
      * 游戏房间匹配
      * @param $fd
      */
-    public function gameRoomMatch($fd) : void
+    public function gameRoomMatch($fd): void
     {
         $game_conf = config('game');
         $redis = redis();
         $len = $redis->sCard($game_conf['room_list']);
         $serv = server();
-        if($len >= 3) {
+        if ($len >= 3) {
             //匹配成功, 下发手牌数据, 并进入房间数据
             $users = $users_key = $fds = array();
-            for($i = 0; $i < 3; $i++) {
+            for ($i = 0; $i < 3; $i++) {
                 $account = $redis->sPop($game_conf['room_list']);
                 $key = sprintf($game_conf['user_bind_key'], $account);
                 //根据账号获取fd
@@ -40,7 +41,7 @@ class GameSyncTask
             }
             //获取房间号
             $room_no_key = $game_conf['user_room_no'];
-            if($redis->exists($room_no_key)) {
+            if ($redis->exists($room_no_key)) {
                 $room_no = $redis->get($room_no_key);
                 $room_no++;
                 $redis->set($room_no_key, $room_no);
@@ -49,36 +50,36 @@ class GameSyncTask
                 $redis->set($room_no_key, $room_no);
             }
             //存入房间号和用户对应关系
-            foreach($users as $v) {
+            foreach ($users as $v) {
                 $user_key = sprintf($game_conf['user_room'], $v);
                 $user_room[$user_key] = $room_no;
             }
 
-            if(!empty($user_room)) {
+            if (!empty($user_room)) {
                 $redis->mset($user_room);
             }
 
             //随机发牌
-            $obj =  new DdzPoker();
+            $obj = new DdzPoker();
             $card = $obj->dealCards($users);
 
             //存入用户信息
             $room_data = array(
-                'room_no'=>$room_no,
-                'hand'=>$card['card']['hand']
+                'room_no' => $room_no,
+                'hand' => $card['card']['hand']
             );
-            foreach($users as $k=>$v) {
+            foreach ($users as $k => $v) {
                 $room_data['uinfo'][] = $v;
                 $room_data[$v] = array(
-                    'card'=>$card['card'][$v] ,
-                    'chair_id'=>($k+1)
+                    'card' => $card['card'][$v],
+                    'chair_id' => ($k + 1)
                 );
             }
             $user_room_data_key = sprintf($game_conf['user_room_data'], $room_no);
             $this->arrToHashInRedis($room_data, $user_room_data_key);
             //分别发消息给三个人
-            foreach($users as $k=>$v) {
-                if(isset($fds[$v])) {
+            foreach ($users as $k => $v) {
+                if (isset($fds[$v])) {
                     $data = Packet::packFormat('OK', 0, $room_data[$v]);
                     $data = Packet::packEncode($data, MainCmd::CMD_SYS, SubCmd::ENTER_ROOM_SUCC_RESP);
                     $serv->push($fds[$v], $data, WEBSOCKET_OPCODE_BINARY);
@@ -87,8 +88,8 @@ class GameSyncTask
         } else {
             //匹配失败， 请继续等待
             $msg = array(
-                'status'=>'fail',
-                'msg'=>'人数不够3人，请耐心等待!'
+                'status' => 'fail',
+                'msg' => '人数不够3人，请耐心等待!'
             );
             $data = Packet::packFormat('OK', 0, $msg);
             $data = Packet::packEncode($data, MainCmd::CMD_SYS, SubCmd::ENTER_ROOM_FAIL_RESP);
@@ -107,10 +108,10 @@ class GameSyncTask
         $fds = $this->_getRoomFds($account);
         //匹配失败， 请继续等待
         $msg = array(
-            'account'=>$account,
-            'calltype'=>$calltype,
-            'chair_id'=>$chair_id,
-            'calltime'=>time()
+            'account' => $account,
+            'calltype' => $calltype,
+            'chair_id' => $chair_id,
+            'calltime' => time()
         );
         $data = Packet::packFormat('OK', 0, $msg);
         $data = Packet::packEncode($data, MainCmd::CMD_GAME, SubCmd::SUB_GAME_CALL_TIPS_RESP);
@@ -128,18 +129,18 @@ class GameSyncTask
     {
         $client = array();
         $start_fd = 0;
-        while(true) {
+        while (true) {
             $conn_list = $serv->getClientList($start_fd, 10);
-            if ($conn_list===false or count($conn_list) === 0) {
+            if ($conn_list === false or count($conn_list) === 0) {
                 echo "BroadCast finish\n";
                 break;
             }
             $start_fd = end($conn_list);
-            foreach($conn_list as $fd) {
+            foreach ($conn_list as $fd) {
                 //获取客户端信息
                 $client_info = $serv->getClientInfo($fd);
                 $client[$fd] = $client_info;
-                if(isset($client_info['websocket_status']) && $client_info['websocket_status'] == 3) {
+                if (isset($client_info['websocket_status']) && $client_info['websocket_status'] == 3) {
                     $serv->push($fd, $data, WEBSOCKET_OPCODE_BINARY);
                 }
             }
@@ -155,11 +156,11 @@ class GameSyncTask
      */
     protected function pushToUsers($serv, $users, $data)
     {
-        foreach($users as $fd) {
+        foreach ($users as $fd) {
             //获取客户端信息
             $client_info = $serv->getClientInfo($fd);
             $client[$fd] = $client_info;
-            if(isset($client_info['websocket_status']) && $client_info['websocket_status'] == 3) {
+            if (isset($client_info['websocket_status']) && $client_info['websocket_status'] == 3) {
                 $serv->push($fd, $data, WEBSOCKET_OPCODE_BINARY);
             }
         }
@@ -178,8 +179,8 @@ class GameSyncTask
         $uinfo = json_decode($uinfo, true);
         $accs = isset($uinfo['account']) ? $uinfo['account'] : array();
         $binds = $fds = array();
-        if(!empty($accs)) {
-            foreach($accs as $v) {
+        if (!empty($accs)) {
+            foreach ($accs as $v) {
                 $binds[] = sprintf($game_conf['user_bind_key'], $v);
             }
             $fds = redis()->mget($binds);
@@ -194,8 +195,8 @@ class GameSyncTask
      */
     protected function arrToHashInRedis($arr, $hash_key)
     {
-        foreach($arr as $key=>$val) {
-            redis()->hSet($hash_key,$key, json_encode($val));
+        foreach ($arr as $key => $val) {
+            redis()->hSet($hash_key, $key, json_encode($val));
         }
     }
 }

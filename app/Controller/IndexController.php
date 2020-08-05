@@ -27,7 +27,7 @@ class IndexController extends AbstractController
 
     public function index(RenderInterface $render)
     {
-        if(!$this->_isLogin()) {
+        if (!$this->_isLogin()) {
             return $this->response->redirect('/login');
         }
         //用户信息传递到客户端
@@ -41,10 +41,10 @@ class IndexController extends AbstractController
         $action = $request->post('action');
         $account = $request->post('account');
         $tips = '';
-        if($action == 'login') {
-            if(!empty($account)) {
+        if ($action == 'login') {
+            if (!empty($account)) {
                 //注册登录
-                $uinfo = array('account'=>$account);
+                $uinfo = array('account' => $account);
                 $cookie = new Cookie('USER_INFO', json_encode($uinfo));
                 $response = $response->withCookie($cookie);
                 return $response->redirect('/');
@@ -52,7 +52,7 @@ class IndexController extends AbstractController
                 $tips = '温馨提示：用户账号不能为空！';
             }
         }
-        return $render->render('login.html', ['tips'=>$tips]);
+        return $render->render('login.html', ['tips' => $tips]);
     }
 
     private function _isLogin()

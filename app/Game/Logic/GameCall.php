@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Game\Logic;
 
 use App\Game\Core\AStrategy;
@@ -9,7 +10,6 @@ use App\Game\Conf\SubCmd;
 /**
  *  叫地主
  */
-
 class GameCall extends AStrategy
 {
     /**
@@ -22,7 +22,7 @@ class GameCall extends AStrategy
         $user_room_data = $this->getRoomData($account);
         $room_user_data = json_decode($user_room_data[$account], true);
         //如果已经地主产生了, 直接下发叫地主信息
-        if(isset($user_room_data['master']) && $user_room_data['last_chair_id']) {
+        if (isset($user_room_data['master']) && $user_room_data['last_chair_id']) {
             $this->callGameResp($room_user_data['chair_id'], $room_user_data['calltype'], $user_room_data['master'], $user_room_data['last_chair_id']);
         } else {
             if (!empty($room_user_data)) {
@@ -53,7 +53,7 @@ class GameCall extends AStrategy
     {
         $fds = $this->getRoomFds($account);
         //匹配失败， 请继续等待
-        $msg = array('account'=>$account, 'calltype'=>$calltype, 'chair_id'=>$chair_id, 'calltime'=>time());
+        $msg = array('account' => $account, 'calltype' => $calltype, 'chair_id' => $chair_id, 'calltime' => time());
         $data = Packet::packFormat('OK', 0, $msg);
         $data = Packet::packEncode($data, MainCmd::CMD_GAME, SubCmd::SUB_GAME_CALL_TIPS_RESP);
         $this->pushToUsers($this->_params['serv'], $fds, $data);
@@ -69,8 +69,8 @@ class GameCall extends AStrategy
      */
     protected function callGameResp($chair_id, $calltype, $master = '', $last_chair_id = 0)
     {
-        $msg = array('chair_id'=>$chair_id,'calltype'=>$calltype);
-        if($master != '' && $last_chair_id > 0) {
+        $msg = array('chair_id' => $chair_id, 'calltype' => $calltype);
+        if ($master != '' && $last_chair_id > 0) {
             $msg['master'] = $master;
             $msg['last_chair_id'] = $last_chair_id;
         }
@@ -87,7 +87,7 @@ class GameCall extends AStrategy
     {
         $room_data = $this->getRoomData($account);
         $infos = json_decode($room_data['uinfo'], true);
-        if(!isset($room_data['master'])) {
+        if (!isset($room_data['master'])) {
             //加入游戏房间队列里面
             $calls = $accouts = array();
             $flag = 0;
@@ -115,8 +115,8 @@ class GameCall extends AStrategy
                 $user_data['card'] = $card;
                 //设置地主和用户手牌数据
                 $param = array(
-                    'master'=>$user,
-                    $user=>json_encode($user_data)
+                    'master' => $user,
+                    $user => json_encode($user_data)
                 );
                 $this->muitSetRoomData($account, $param);
                 $this->catchGameCard($room_data, $user);
@@ -134,7 +134,7 @@ class GameCall extends AStrategy
     {
         $info = json_decode($room_data[$user], true);
         $msg = array(
-            'user'=>$user,
+            'user' => $user,
             'chair_id' => $info['chair_id'],
             'hand_card' => $room_data['hand']
         );

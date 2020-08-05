@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Game\Conf;
 
 /**
@@ -10,4 +11,6 @@ class MainCmd
 {
     const CMD_SYS = 1;      //websocket系统主命令字，（主命令字）- 客户端使用
     const CMD_GAME = 2;     //游戏协议系统主命令字，（主命令字）- 客户端使用
-};
+}
+
+;

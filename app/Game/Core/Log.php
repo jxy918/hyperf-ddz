@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Game\Core;
 
 class Log
@@ -10,7 +11,7 @@ class Log
     protected static $level_info = array(
         1 => 'INFO',
         2 => 'DEBUG',
-        3=>'ERROR'
+        3 => 'ERROR'
     );
 
     /**
@@ -26,8 +27,8 @@ class Log
      */
     public static function show($centent = '', $level = 1, $str = '')
     {
-        if($level >= self::$level) {
-            echo $str.date('Y/m/d H:i:s') . " [\033[0;36m" . self::$level_info[$level] . "\033[0m]  " . $centent . "\n";
+        if ($level >= self::$level) {
+            echo $str . date('Y/m/d H:i:s') . " [\033[0;36m" . self::$level_info[$level] . "\033[0m]  " . $centent . "\n";
         }
     }
 
@@ -38,7 +39,7 @@ class Log
      */
     public static function split($split = '', $level = 1)
     {
-        if($level >= self::$level) {
+        if ($level >= self::$level) {
             echo $split . "\n";
         }
     }

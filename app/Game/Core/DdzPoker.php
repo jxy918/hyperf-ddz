@@ -1,11 +1,11 @@
 <?php
+
 namespace App\Game\Core;
 
 /**
  * 斗地主 poker 算法逻辑
  * @author：jiagnxinyu
  */
-
 class DdzPoker
 {
     //花色类型
@@ -117,10 +117,10 @@ class DdzPoker
         $user_card1 = $this->_sortCardByGrade($user_card1);
         $user_card2 = $this->_sortCardByGrade($user_card2);
         $user_card3 = $this->_sortCardByGrade($user_card3);
-        if(!empty($users)) {
+        if (!empty($users)) {
             $card['hand'] = $hand;
-            foreach($users as $k=>$v) {
-                $str = 'user_card'.($k+1);
+            foreach ($users as $k => $v) {
+                $str = 'user_card' . ($k + 1);
                 $tmp = $$str;
                 $card[$v] = $tmp;
                 $show_card[$v] = $this->crateCard($tmp);
@@ -816,15 +816,16 @@ class DdzPoker
      * @param array $cards
      * @return bool
      */
-    public function isGoodCard($cards = array()) {
+    public function isGoodCard($cards = array())
+    {
         //判断牌里是否有大王和小王， 还有两张2的也算好牌
         $er = 0;
-        foreach($cards as $v) {
-            if($v == 79) {
+        foreach ($cards as $v) {
+            if ($v == 79) {
                 return true;
-            } elseif($this->_getModVal($v) == 13) {
+            } elseif ($this->_getModVal($v) == 13) {
                 $er++;
-                if($er >= 2) {
+                if ($er >= 2) {
                     return true;
                 }
             }
@@ -869,7 +870,8 @@ class DdzPoker
      * @param $cards
      * @return array
      */
-    private function _getCardGrade($cards) {
+    private function _getCardGrade($cards)
+    {
         $new_card = array();
         foreach ($cards as $v) {
             $new_card[] = $this->_getModVal($v);
@@ -923,12 +925,12 @@ class DdzPoker
     {
         //判断数量
         $count = 0;
-        foreach ($cnt_card as $k=>$v) {
+        foreach ($cnt_card as $k => $v) {
             if (!in_array($k, $card) && $v >= $num) {
                 $count++;
             }
         }
-        if($count >= count($card)) {
+        if ($count >= count($card)) {
             return true;
         } else {
             return false;

@@ -23,28 +23,28 @@ class GameController implements OnMessageInterface, OnOpenInterface, OnCloseInte
     {
         Log::show(" Message: client #{$frame->fd} push success Mete: \n{");
         $data = Packet::packDecode($frame->data);
-        if(isset($data['code']) && $data['code'] == 0 && isset($data['msg']) && $data['msg'] == 'OK') {
-            Log::show('Recv <<<  cmd='.$data['cmd'].'  scmd='.$data['scmd'].'  len='.$data['len'].'  data='.json_encode($data['data']));
+        if (isset($data['code']) && $data['code'] == 0 && isset($data['msg']) && $data['msg'] == 'OK') {
+            Log::show('Recv <<<  cmd=' . $data['cmd'] . '  scmd=' . $data['scmd'] . '  len=' . $data['len'] . '  data=' . json_encode($data['data']));
             //转发请求，代理模式处理,websocket路由到相关逻辑
             $data['serv'] = $server;
             //用户登陆信息
             $game_conf = config('game');
             $user_info_key = sprintf($game_conf['user_info_key'], $frame->fd);
             $uinfo = redis()->get($user_info_key);
-            if($uinfo) {
+            if ($uinfo) {
                 $data['userinfo'] = json_decode($uinfo, true);
             } else {
                 $data['userinfo'] = array();
             }
             $obj = new Dispatch($data);
             $back = "<center><h1>404 Not Found</h1></center><hr><center>Swoole</center>\n";
-            if(!empty($obj->getStrategy())) {
+            if (!empty($obj->getStrategy())) {
                 $back = $obj->exec();
-                if($back) {
+                if ($back) {
                     $server->push($frame->fd, $back, WEBSOCKET_OPCODE_BINARY);
                 }
             }
-            Log::show('Tcp Strategy <<<  data='.$back);
+            Log::show('Tcp Strategy <<<  data=' . $back);
         } else {
             Log::show($data['msg']);
         }
@@ -149,7 +149,7 @@ class GameController implements OnMessageInterface, OnOpenInterface, OnCloseInte
         $room_no = $this->getRoomNo($account);
         //房间信息
         $game_key = $this->getGameConf('user_room_data');
-        if($game_key) {
+        if ($game_key) {
             $user_room_key = sprintf($game_key, $room_no);
             $user_room_data = redis()->hGetAll($user_room_key);
         }
@@ -169,14 +169,16 @@ class GameController implements OnMessageInterface, OnOpenInterface, OnCloseInte
         $room_no = redis()->get($room_key);
         return $room_no ? $room_no : 0;
     }
+
     /**
      * 返回游戏配置
      * @param string $key
      * @return string
      */
-    protected function getGameConf($key = '') {
+    protected function getGameConf($key = '')
+    {
         $conf = config('game');
-        if(isset($conf[$key])) {
+        if (isset($conf[$key])) {
             return $conf[$key];
         } else {
             return '';
